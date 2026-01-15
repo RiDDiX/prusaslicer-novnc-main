@@ -19,7 +19,7 @@ export LOCALFBPORT=$((${VNC_PORT} + DISPLAY_NUMBER))
 if [ -n "$ENABLEHWGPU" ] && [ "$ENABLEHWGPU" = "true" ]; then
   export VGLRUN="/usr/bin/vglrun"
   export LIBGL_ALWAYS_SOFTWARE=0
-  export GALLIUM_DRIVER=
+  export GALLIUM_DRIVER=auto
 else 
   export VGLRUN=
   export LIBGL_ALWAYS_SOFTWARE=1
