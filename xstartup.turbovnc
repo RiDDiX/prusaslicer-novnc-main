@@ -1,0 +1,12 @@
+#!/bin/bash
+# Custom xstartup for TurboVNC
+
+# Unset SESSION_MANAGER to prevent issues
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+
+# Set display
+export DISPLAY=:0
+
+# Start LXDE session
+exec startlxde
