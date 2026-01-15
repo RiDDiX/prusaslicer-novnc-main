@@ -22,9 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Packages needed to support the AppImage changes. The libnvidia-egl-gbm1 package resolves an issue 
     # where GPU acceleration resulted in blank windows being generated.
     libwebkit2gtk-4.0-dev libnvidia-egl-gbm1 \
-    # Intel iGPU support - Mesa drivers and VA-API for hardware acceleration
-    mesa-utils libgl1-mesa-dri mesa-va-drivers vainfo intel-media-va-driver \
-    libva2 libva-drm2 libva-x11-2 libegl-mesa0 libgbm1 \
+    # Intel iGPU support - Mesa drivers for hardware acceleration
+    mesa-utils libegl-mesa0 libgbm1 \
     && mkdir -p /usr/share/desktop-directories \
     # Install Firefox without Snap.
     && add-apt-repository ppa:mozillateam/ppa \

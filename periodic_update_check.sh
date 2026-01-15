@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Periodic PrusaSlicer Update Check
 # Runs in background and checks for updates at specified intervals
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # PrusaSlicer Auto-Update Script
 # Checks for new versions and updates if available
 
