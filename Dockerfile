@@ -56,9 +56,17 @@ RUN sed -i 's/\r$//' /slic3r/get_latest_prusaslicer_release.sh \
   && chmod +x /slic3r/periodic_update_check.sh
 
 # Download and extract PrusaSlicer
-RUN latestSlic3r=$(/slic3r/get_latest_prusaslicer_release.sh url) \
+RUN set -ex \
+  && echo "=== Testing GitHub API ===" \
+  && curl -SsL https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest | head -50 \
+  && echo "=== Getting release info ===" \
+  && latestSlic3r=$(/slic3r/get_latest_prusaslicer_release.sh url) \
   && slic3rReleaseName=$(/slic3r/get_latest_prusaslicer_release.sh name) \
   && slic3rVersion=$(/slic3r/get_latest_prusaslicer_release.sh version) \
+  && echo "URL: ${latestSlic3r}" \
+  && echo "Name: ${slic3rReleaseName}" \
+  && echo "Version: ${slic3rVersion}" \
+  && if [ -z "$latestSlic3r" ] || [ "$latestSlic3r" = "null" ]; then echo "ERROR: Could not get download URL"; exit 1; fi \
   && echo "Downloading PrusaSlicer ${slic3rVersion} from ${latestSlic3r}" \
   && curl -sSL ${latestSlic3r} > ${slic3rReleaseName} \
   && rm -f /slic3r/releaseInfo.json \
