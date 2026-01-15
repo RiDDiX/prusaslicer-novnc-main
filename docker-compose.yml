@@ -20,8 +20,9 @@ services:
       - AUTO_UPDATE=true
       - ENABLE_PERIODIC_UPDATES=false
       - UPDATE_CHECK_INTERVAL=86400
-      # AppImage source - uses own repo releases, fallback to community
-      - PRUSASLICER_APPIMAGE_REPO=RiDDiX/prusaslicer-novnc-main
+      # AppImage source - leave empty to use community repo (probonopd/PrusaSlicer.AppImage)
+      # Set to your own repo if you build AppImages via GitHub Actions
+      #- PRUSASLICER_APPIMAGE_REPO=RiDDiX/prusaslicer-appimage
     volumes:
       - ./prints:/prints/
       - ./data:/configs/
