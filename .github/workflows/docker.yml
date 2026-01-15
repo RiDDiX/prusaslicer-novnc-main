@@ -14,6 +14,11 @@ on:
       - 'update_prusaslicer.sh'
       - 'periodic_update_check.sh'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'PrusaSlicer version (triggered by AppImage build)'
+        required: false
+        default: ''
 
 env:
   REGISTRY: ghcr.io
@@ -24,12 +29,28 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            echo "Using provided version: $VERSION"
+          else
+            # Get latest from our AppImage releases or PrusaSlicer
+            VERSION=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name // empty')
+            if [ -z "$VERSION" ]; then
+              VERSION=$(curl -s https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest | jq -r '.tag_name' | sed 's/version_//')
+            fi
+            echo "Detected version: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -48,6 +69,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }}
             type=raw,value={{date 'YYYY.MM.DD.HHmmss'}}
             type=sha,prefix=
 
@@ -60,3 +82,40 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            PRUSASLICER_VERSION=${{ steps.version.outputs.version }}
+
+      - name: Create/Update Docker Release
+        if: steps.version.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DOCKER_TAG="docker-${VERSION}"
+          
+          # Create release notes
+          cat << EOF > release_notes.md
+          ## Docker Image for PrusaSlicer ${VERSION}
+          
+          ### Pull Command
+          \`\`\`bash
+          docker pull ghcr.io/${{ github.repository }}:${VERSION}
+          \`\`\`
+          
+          ### Tags Available
+          - \`ghcr.io/${{ github.repository }}:latest\`
+          - \`ghcr.io/${{ github.repository }}:${VERSION}\`
+          
+          ### Quick Start
+          \`\`\`bash
+          docker run -d -p 8080:8080 ghcr.io/${{ github.repository }}:${VERSION}
+          \`\`\`
+          
+          Built with PrusaSlicer ${VERSION}
+          EOF
+          
+          # Create or update release
+          gh release delete "$DOCKER_TAG" -y 2>/dev/null || true
+          gh release create "$DOCKER_TAG" \
+            --title "Docker: PrusaSlicer ${VERSION}" \
+            --notes-file release_notes.md
