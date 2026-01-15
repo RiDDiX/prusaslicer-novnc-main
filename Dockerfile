@@ -10,28 +10,23 @@ LABEL description="PrusaSlicer with noVNC, auto-updates, Nvidia & Intel GPU supp
 
 ARG VIRTUALGL_VERSION=3.1.4
 ARG TURBOVNC_VERSION=3.2.1
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install some basic dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget xorg xauth gosu supervisor x11-xserver-utils libegl1-mesa libgl1-mesa-glx \
-    locales-all libpam0g libxt6 libxext6 dbus-x11 xauth x11-xkb-utils xkb-data python3 xterm novnc \
-    lxde gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine arc-theme \
-    freeglut3 libgtk2.0-dev libwxgtk3.0-gtk3-dev libwx-perl libxmu-dev libgl1-mesa-glx libgl1-mesa-dri  \
-    xdg-utils locales locales-all pcmanfm jq curl git bzip2 gpg-agent software-properties-common \
-    # Packages needed to support the AppImage changes. The libnvidia-egl-gbm1 package resolves an issue 
-    # where GPU acceleration resulted in blank windows being generated.
-    libwebkit2gtk-4.0-dev libnvidia-egl-gbm1 \
-    # Intel iGPU support - Mesa drivers for hardware acceleration
+    locales-all libpam0g libxt6 libxext6 dbus-x11 x11-xkb-utils xkb-data python3 xterm novnc \
+    lxde gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf arc-theme \
+    freeglut3 libgtk2.0-dev libwxgtk3.2-dev libwx-perl libxmu-dev libgl1-mesa-dri \
+    xdg-utils locales pcmanfm jq curl git bzip2 gpg-agent software-properties-common \
+    libwebkit2gtk-4.1-dev libfuse2 \
     mesa-utils libegl-mesa0 libgbm1 \
     && mkdir -p /usr/share/desktop-directories \
-    # Install Firefox without Snap.
-    && add-apt-repository ppa:mozillateam/ppa \
-    && apt update \
-    && apt install -y firefox-esr --no-install-recommends \
-    # Clean everything up.
-    && apt autoclean -y \
-    && apt autoremove -y \
+    && add-apt-repository -y ppa:mozillateam/ppa \
+    && apt-get update \
+    && apt-get install -y firefox-esr --no-install-recommends \
+    && apt-get autoclean -y \
+    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install VirtualGL and TurboVNC from GitHub Releases
@@ -86,7 +81,7 @@ RUN openssl req -x509 -nodes -newkey rsa:2048 -keyout /etc/novnc.pem -out /etc/n
     && rm /etc/xdg/autostart/lxpolkit.desktop \
     && mv /usr/bin/lxpolkit /usr/bin/lxpolkit.ORIG
 
-ENV PATH ${PATH}:/opt/VirtualGL/bin:/opt/TurboVNC/bin
+ENV PATH="${PATH}:/opt/VirtualGL/bin:/opt/TurboVNC/bin"
 
 COPY entrypoint.sh /entrypoint.sh
 COPY supervisord.conf /etc/
