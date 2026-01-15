@@ -43,38 +43,42 @@ RUN wget -qO /tmp/virtualgl_${VIRTUALGL_VERSION}_amd64.deb https://packagecloud.
 
 # Install Prusaslicer.
 WORKDIR /slic3r
-ADD get_latest_prusaslicer_release.sh /slic3r
-ADD update_prusaslicer.sh /slic3r
-ADD periodic_update_check.sh /slic3r
-# Fix Windows line endings (CRLF -> LF) and make executable
-RUN sed -i 's/\r$//' /slic3r/*.sh \
+COPY get_latest_prusaslicer_release.sh /slic3r/
+COPY update_prusaslicer.sh /slic3r/
+COPY periodic_update_check.sh /slic3r/
+
+# Fix line endings, set permissions, and download PrusaSlicer
+RUN sed -i 's/\r$//' /slic3r/get_latest_prusaslicer_release.sh \
+  && sed -i 's/\r$//' /slic3r/update_prusaslicer.sh \
+  && sed -i 's/\r$//' /slic3r/periodic_update_check.sh \
   && chmod +x /slic3r/get_latest_prusaslicer_release.sh \
   && chmod +x /slic3r/update_prusaslicer.sh \
-  && chmod +x /slic3r/periodic_update_check.sh \
-  && latestSlic3r=$(/slic3r/get_latest_prusaslicer_release.sh url) \
+  && chmod +x /slic3r/periodic_update_check.sh
+
+# Download and extract PrusaSlicer
+RUN latestSlic3r=$(/slic3r/get_latest_prusaslicer_release.sh url) \
   && slic3rReleaseName=$(/slic3r/get_latest_prusaslicer_release.sh name) \
   && slic3rVersion=$(/slic3r/get_latest_prusaslicer_release.sh version) \
+  && echo "Downloading PrusaSlicer ${slic3rVersion} from ${latestSlic3r}" \
   && curl -sSL ${latestSlic3r} > ${slic3rReleaseName} \
   && rm -f /slic3r/releaseInfo.json \
   && chmod +x /slic3r/${slic3rReleaseName} \
   && /slic3r/${slic3rReleaseName} --appimage-extract \
   && rm -f /slic3r/${slic3rReleaseName} \
-  && echo "${slic3rVersion}" > /slic3r/.current_version \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get autoclean \
-  && groupadd slic3r \
+  && echo "${slic3rVersion}" > /slic3r/.current_version
+
+# Create user and directories
+RUN groupadd slic3r \
   && useradd -g slic3r --create-home --home-dir /home/slic3r slic3r \
-  && mkdir -p /slic3r \
-  && mkdir -p /configs \
-  && mkdir -p /prints/ \
-  && chown -R slic3r:slic3r /slic3r/ /home/slic3r/ /prints/ /configs/ \
-  && locale-gen en_US \
-  && mkdir /configs/.local \
+  && mkdir -p /configs/.local \
   && mkdir -p /configs/.config/ \
-  && ln -s /configs/.config/ /home/slic3r/ \
+  && mkdir -p /prints/ \
   && mkdir -p /home/slic3r/.config/ \
+  && ln -s /configs/.config/ /home/slic3r/ \
   && echo "XDG_DOWNLOAD_DIR=\"/prints/\"" >> /home/slic3r/.config/user-dirs.dirs \
-  && echo "file:///prints prints" >> /home/slic3r/.gtk-bookmarks
+  && echo "file:///prints prints" >> /home/slic3r/.gtk-bookmarks \
+  && chown -R slic3r:slic3r /slic3r/ /home/slic3r/ /prints/ /configs/ \
+  && locale-gen en_US
 
 # Generate key for noVNC and cleanup errors.
 RUN openssl req -x509 -nodes -newkey rsa:2048 -keyout /etc/novnc.pem -out /etc/novnc.pem -days 365 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" \
@@ -83,8 +87,10 @@ RUN openssl req -x509 -nodes -newkey rsa:2048 -keyout /etc/novnc.pem -out /etc/n
 
 ENV PATH ${PATH}:/opt/VirtualGL/bin:/opt/TurboVNC/bin
 
-ADD entrypoint.sh /entrypoint.sh
-ADD supervisord.conf /etc/
+COPY entrypoint.sh /entrypoint.sh
+COPY supervisord.conf /etc/
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh \
+  && sed -i 's/\r$//' /etc/supervisord.conf
 
 # Add a default file to resize and redirect, and adjust icons for noVNC.
 ADD vncresize.html /usr/share/novnc/index.html
