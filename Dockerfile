@@ -22,11 +22,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libwebkit2gtk-4.1-dev libfuse2 \
     mesa-utils libegl-mesa0 libgbm1 \
     && mkdir -p /usr/share/desktop-directories \
-    && add-apt-repository -y ppa:mozillateam/ppa \
-    && apt-get update \
-    && apt-get install -y firefox-esr --no-install-recommends \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Firefox ESR from official Mozilla repository (more reliable than PPA)
+RUN install -d -m 0755 /etc/apt/keyrings \
+    && wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null \
+    && echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | tee /etc/apt/sources.list.d/mozilla.list > /dev/null \
+    && echo 'Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000' | tee /etc/apt/preferences.d/mozilla > /dev/null \
+    && apt-get update \
+    && apt-get install -y firefox-esr --no-install-recommends \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install VirtualGL and TurboVNC from GitHub Releases
