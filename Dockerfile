@@ -71,7 +71,13 @@ RUN set -e \
   && chmod +x "/slic3r/${slic3rReleaseName}" \
   && "/slic3r/${slic3rReleaseName}" --appimage-extract \
   && rm -f "/slic3r/${slic3rReleaseName}" \
-  && echo "${slic3rVersion}" > /slic3r/.current_version
+  && echo "${slic3rVersion}" > /slic3r/.current_version \
+  && echo "Removing AppImage EGL/DRI libs to use system libs..." \
+  && rm -rf /slic3r/squashfs-root/usr/lib/libEGL* \
+  && rm -rf /slic3r/squashfs-root/usr/lib/libGL* \
+  && rm -rf /slic3r/squashfs-root/usr/lib/libdrm* \
+  && rm -rf /slic3r/squashfs-root/usr/lib/dri \
+  && rm -rf /slic3r/squashfs-root/usr/lib/libgbm*
 
 # Create user and directories
 RUN groupadd slic3r \
