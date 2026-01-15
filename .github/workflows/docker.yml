@@ -43,9 +43,12 @@ jobs:
             VERSION="${{ github.event.inputs.version }}"
             echo "Using provided version: $VERSION"
           else
-            # Get latest from our AppImage releases or PrusaSlicer
-            VERSION=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name // empty')
-            if [ -z "$VERSION" ]; then
+            # Get latest AppImage release (not docker-* releases) from our repo
+            VERSION=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases | \
+              jq -r '[.[] | select(.tag_name | startswith("docker-") | not) | select(.assets[].name | test("AppImage$"))] | first | .tag_name // empty')
+            
+            # Fallback to official PrusaSlicer version
+            if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
               VERSION=$(curl -s https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest | jq -r '.tag_name' | sed 's/version_//')
             fi
             echo "Detected version: $VERSION"
