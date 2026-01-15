@@ -72,12 +72,17 @@ RUN set -e \
   && "/slic3r/${slic3rReleaseName}" --appimage-extract \
   && rm -f "/slic3r/${slic3rReleaseName}" \
   && echo "${slic3rVersion}" > /slic3r/.current_version \
-  && echo "Removing AppImage EGL/DRI libs to use system libs..." \
-  && find /slic3r/squashfs-root -name "libEGL*" -delete \
-  && find /slic3r/squashfs-root -name "libGL*" -delete \
-  && find /slic3r/squashfs-root -name "libdrm*" -delete \
-  && find /slic3r/squashfs-root -name "libgbm*" -delete \
-  && find /slic3r/squashfs-root -type d -name "dri" -exec rm -rf {} + 2>/dev/null || true
+  && echo "Replacing AppImage GL libs with symlinks to system libs..." \
+  && rm -rf /slic3r/squashfs-root/usr/lib/libEGL* 2>/dev/null || true \
+  && rm -rf /slic3r/squashfs-root/usr/lib/libGL* 2>/dev/null || true \
+  && rm -rf /slic3r/squashfs-root/usr/lib/dri 2>/dev/null || true \
+  && rm -rf /slic3r/squashfs-root/shared/lib/dri 2>/dev/null || true \
+  && mkdir -p /slic3r/squashfs-root/usr/lib \
+  && mkdir -p /slic3r/squashfs-root/shared/lib \
+  && ln -sf /usr/lib/x86_64-linux-gnu/dri /slic3r/squashfs-root/usr/lib/dri \
+  && ln -sf /usr/lib/x86_64-linux-gnu/dri /slic3r/squashfs-root/shared/lib/dri \
+  && ln -sf /usr/lib/x86_64-linux-gnu/libEGL.so.1 /slic3r/squashfs-root/usr/lib/libEGL.so.1 \
+  && ln -sf /usr/lib/x86_64-linux-gnu/libGL.so.1 /slic3r/squashfs-root/usr/lib/libGL.so.1
 
 # Create user and directories
 RUN groupadd slic3r \

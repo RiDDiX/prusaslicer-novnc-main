@@ -71,13 +71,18 @@ download_and_install() {
     log "Installing new version..."
     mv squashfs-root "$SLIC3R_DIR/"
     
-    # Remove AppImage EGL/GL libs to use system libs (prevents EGL crashes)
-    log "Removing AppImage EGL/DRI libs..."
-    find "$SLIC3R_DIR/squashfs-root" -name "libEGL*" -delete 2>/dev/null || true
-    find "$SLIC3R_DIR/squashfs-root" -name "libGL*" -delete 2>/dev/null || true
-    find "$SLIC3R_DIR/squashfs-root" -name "libdrm*" -delete 2>/dev/null || true
-    find "$SLIC3R_DIR/squashfs-root" -name "libgbm*" -delete 2>/dev/null || true
-    find "$SLIC3R_DIR/squashfs-root" -type d -name "dri" -exec rm -rf {} + 2>/dev/null || true
+    # Replace AppImage GL libs with symlinks to system libs (prevents EGL crashes)
+    log "Replacing AppImage GL libs with symlinks to system libs..."
+    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/libEGL"* 2>/dev/null || true
+    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/libGL"* 2>/dev/null || true
+    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/dri" 2>/dev/null || true
+    rm -rf "$SLIC3R_DIR/squashfs-root/shared/lib/dri" 2>/dev/null || true
+    mkdir -p "$SLIC3R_DIR/squashfs-root/usr/lib"
+    mkdir -p "$SLIC3R_DIR/squashfs-root/shared/lib"
+    ln -sf /usr/lib/x86_64-linux-gnu/dri "$SLIC3R_DIR/squashfs-root/usr/lib/dri"
+    ln -sf /usr/lib/x86_64-linux-gnu/dri "$SLIC3R_DIR/squashfs-root/shared/lib/dri"
+    ln -sf /usr/lib/x86_64-linux-gnu/libEGL.so.1 "$SLIC3R_DIR/squashfs-root/usr/lib/libEGL.so.1"
+    ln -sf /usr/lib/x86_64-linux-gnu/libGL.so.1 "$SLIC3R_DIR/squashfs-root/usr/lib/libGL.so.1"
     
     # Update version file
     echo "$LATEST_VERSION" > "$VERSION_FILE"
