@@ -9,13 +9,10 @@ SLIC3R_DIR="/slic3r"
 VERSION_FILE="/slic3r/.current_version"
 LOG_PREFIX="[PrusaSlicer-Update]"
 
-# Use own repo if set, otherwise fallback to community
-OWN_REPO="${PRUSASLICER_APPIMAGE_REPO:-}"
-if [ -n "$OWN_REPO" ]; then
-    GITHUB_API="https://api.github.com/repos/${OWN_REPO}/releases/latest"
-else
-    GITHUB_API="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
-fi
+# Default to own repo, can be overridden via environment variable
+DEFAULT_REPO="riddix/prusaslicer-novnc-main"
+APPIMAGE_REPO="${PRUSASLICER_APPIMAGE_REPO:-$DEFAULT_REPO}"
+GITHUB_API="https://api.github.com/repos/${APPIMAGE_REPO}/releases"
 
 log() {
     echo "$LOG_PREFIX $1"
@@ -31,11 +28,20 @@ get_installed_version() {
 
 get_latest_release_info() {
     TMPDIR="$(mktemp -d)"
-    curl -SsL "$GITHUB_API" > "$TMPDIR/latest.json"
     
-    LATEST_URL=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .browser_download_url' "$TMPDIR/latest.json")
-    LATEST_NAME=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .name' "$TMPDIR/latest.json")
-    LATEST_VERSION=$(jq -r '.tag_name' "$TMPDIR/latest.json")
+    # Get releases and find the latest one that has an AppImage (skip docker-* tags)
+    curl -SsL --connect-timeout 10 --max-time 30 "$GITHUB_API" 2>/dev/null | \
+        jq -r '[.[] | select(.assets[].name | test("AppImage$"))] | first' > "$TMPDIR/latest.json"
+    
+    # If no AppImage release found, try community repo as fallback
+    if [ ! -s "$TMPDIR/latest.json" ] || [ "$(cat "$TMPDIR/latest.json")" = "null" ]; then
+        log "No AppImage in own repo, falling back to community repo..."
+        curl -SsL --connect-timeout 10 --max-time 30 "https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest" 2>/dev/null > "$TMPDIR/latest.json"
+    fi
+    
+    LATEST_URL=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .browser_download_url' "$TMPDIR/latest.json" 2>/dev/null)
+    LATEST_NAME=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .name' "$TMPDIR/latest.json" 2>/dev/null)
+    LATEST_VERSION=$(jq -r '.tag_name' "$TMPDIR/latest.json" 2>/dev/null)
     
     rm -rf "$TMPDIR"
 }
