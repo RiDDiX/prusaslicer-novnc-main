@@ -1,28 +1,21 @@
 ---
-# Docker Compose for Nvidia GPU
-# For Intel iGPU, use: docker compose -f docker-compose.intel.yml up -d
+# Docker Compose for Software Rendering (no GPU required)
+# Use with: docker compose -f docker-compose.software.yml up -d
 version: "2.1"
 services:
   prusaslicer-novnc:
     image: ghcr.io/riddix/prusaslicer-novnc-main:latest
     container_name: prusaslicer-novnc
-    runtime: nvidia
     environment:
       - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
       - DISPLAY=:0
-      - VGL_DISPLAY=egl
-      - SUPD_LOGLEVEL=INFO 
-      - ENABLEHWGPU=true
+      - SUPD_LOGLEVEL=INFO
+      - ENABLEHWGPU=false
       - VNC_RESOLUTION=1920x1080
       # Auto-update settings
       - AUTO_UPDATE=true
       - ENABLE_PERIODIC_UPDATES=false
       - UPDATE_CHECK_INTERVAL=86400
-      # AppImage source - leave empty to use community repo (probonopd/PrusaSlicer.AppImage)
-      # Set to your own repo if you build AppImages via GitHub Actions
-      #- PRUSASLICER_APPIMAGE_REPO=riddix/prusaslicer-novnc-main
     volumes:
       - ./prints:/prints/
       - ./data:/configs/

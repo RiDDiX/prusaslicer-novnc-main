@@ -4,7 +4,7 @@
 version: "2.1"
 services:
   prusaslicer-novnc:
-    image: ghcr.io/${GITHUB_USER:-your-username}/prusaslicer-novnc:latest
+    image: ghcr.io/riddix/prusaslicer-novnc-main:latest
     container_name: prusaslicer-novnc
     devices:
       - /dev/dri:/dev/dri
@@ -21,7 +21,7 @@ services:
       - UPDATE_CHECK_INTERVAL=86400
       # AppImage source - leave empty to use community repo (probonopd/PrusaSlicer.AppImage)
       # Set to your own repo if you build AppImages via GitHub Actions
-      #- PRUSASLICER_APPIMAGE_REPO=RiDDiX/prusaslicer-appimage
+      #- PRUSASLICER_APPIMAGE_REPO=riddix/prusaslicer-novnc-main
     volumes:
       - ./prints:/prints/
       - ./data:/configs/

@@ -1,19 +1,32 @@
-# PrusaSlicer noVNC Docker Container (Enhanced Fork)
+# PrusaSlicer noVNC Docker Container
 
-> **🍴 This is a fork of [helfrichmichael/prusaslicer-novnc](https://github.com/helfrichmichael/prusaslicer-novnc)**
+[![Build and Publish Docker Image](https://github.com/RiDDiX/prusaslicer-novnc-main/actions/workflows/docker.yml/badge.svg)](https://github.com/RiDDiX/prusaslicer-novnc-main/actions/workflows/docker.yml)
+[![Build PrusaSlicer AppImage](https://github.com/RiDDiX/prusaslicer-novnc-main/actions/workflows/build-appimage.yml/badge.svg)](https://github.com/RiDDiX/prusaslicer-novnc-main/actions/workflows/build-appimage.yml)
 
-## What's Different in This Fork?
+> **🍴 Fork of [helfrichmichael/prusaslicer-novnc](https://github.com/helfrichmichael/prusaslicer-novnc) with enhancements**
 
-This enhanced fork adds the following improvements:
+## Quick Start
 
-- **🔄 Automatic PrusaSlicer Updates** - Container automatically updates PrusaSlicer to the latest version on startup
-- **⏰ Periodic Update Checks** - Optional background service to check for updates regularly
-- **🎮 Intel iGPU Support** - Added support for Intel integrated graphics (in addition to Nvidia)
-- **📦 GitHub Container Registry** - Images hosted on ghcr.io instead of Docker Hub
-- **🛠️ Improved CI/CD** - Automatic builds on push and scheduled weekly builds
-- **🏗️ Own AppImage Builds** - Includes GitHub Actions workflow to build your own up-to-date AppImages
-- **📥 Community Fallback** - Falls back to [probonopd/PrusaSlicer.AppImage](https://github.com/probonopd/PrusaSlicer.AppImage) if no own builds available
-- **⬆️ Updated Dependencies** - VirtualGL 3.1.4, TurboVNC 3.2.1 (latest stable versions)
+```bash
+# Pull and run (Software Rendering - works everywhere)
+docker run -d --name prusaslicer-novnc \
+  -p 8080:8080 \
+  -v ./prints:/prints \
+  -v ./data:/configs \
+  ghcr.io/riddix/prusaslicer-novnc-main:latest
+
+# Access via browser: http://localhost:8080
+```
+
+## Features
+
+- **🔄 Auto-Updates** - Automatically updates PrusaSlicer on container start
+- **⏰ Periodic Updates** - Optional background update checks
+- **🎮 GPU Support** - Nvidia GPU and Intel iGPU hardware acceleration
+- **📦 GHCR Hosting** - Images on `ghcr.io/riddix/prusaslicer-novnc-main`
+- **🏗️ Own AppImage Builds** - GitHub Actions builds latest PrusaSlicer AppImages
+- **📥 Fallback** - Uses [probonopd/PrusaSlicer.AppImage](https://github.com/probonopd/PrusaSlicer.AppImage) if needed
+- **⬆️ Updated Deps** - VirtualGL 3.1.4, TurboVNC 3.2.1
 
 ## Overview
 
@@ -34,23 +47,34 @@ If you're using unraid, open your Docker page and under `Template repositories`,
 #### Docker
 To run this image, you can run the following command: 
 ```bash
-docker run --detach \
-  --volume=prusaslicer-novnc-data:/configs/ \
-  --volume=prusaslicer-novnc-prints:/prints/ \
+docker run -d --name prusaslicer-novnc \
   -p 8080:8080 \
+  -v prusaslicer-data:/configs \
+  -v prusaslicer-prints:/prints \
   -e SSL_CERT_FILE="/etc/ssl/certs/ca-certificates.crt" \
-  --name=prusaslicer-novnc \
-  ghcr.io/YOUR-USERNAME/prusaslicer-novnc:latest
+  ghcr.io/riddix/prusaslicer-novnc-main:latest
 ```
 
-Replace `YOUR-USERNAME` with your GitHub username.
-
-This will bind `/configs/` in the container to a local volume on my machine named `prusaslicer-novnc-data`. Additionally it will bind `/prints/` in the container to `prusaslicer-novnc-prints` locally on my machine, it will bind port `8080` to `8080`, and finally, it will provide an environment variable to keep Prusaslicer happy by providing an `SSL_CERT_FILE`.
+This will bind `/configs/` in the container to a local volume named `prusaslicer-data` and `/prints/` to `prusaslicer-prints`. Port `8080` provides the noVNC web interface.
 
 #### Docker Compose
-To use the pre-built image, simply clone this repository or copy `docker-compose.yml` and run `docker compose up -d`.
 
-To build a new image, clone this repository and run `docker compose up -f docker-compose.build.yml --build -d`
+**Nvidia GPU:**
+```bash
+docker compose up -d
+```
+
+**Intel iGPU:**
+```bash
+docker compose -f docker-compose.intel.yml up -d
+```
+
+**Software Rendering (no GPU):**
+```bash
+docker compose -f docker-compose.software.yml up -d
+```
+
+To build locally: `docker compose up --build -d`
 
 ### Using a VNC Viewer
 
@@ -137,7 +161,7 @@ This container supports automatic updates of PrusaSlicer. By default, the contai
 - `AUTO_UPDATE=true`: Check for updates on container start (default: `true`)
 - `ENABLE_PERIODIC_UPDATES=false`: Enable background periodic update checks (default: `false`)
 - `UPDATE_CHECK_INTERVAL=86400`: Interval in seconds between periodic checks (default: 86400 = 24 hours)
-- `PRUSASLICER_APPIMAGE_REPO=`: Custom AppImage source repo (e.g., `your-username/prusaslicer-novnc`). Leave empty for community fallback.
+- `PRUSASLICER_APPIMAGE_REPO=`: Custom AppImage source repo. Default: `riddix/prusaslicer-novnc-main`. Leave empty for community fallback.
 
 **Note**: After an update, PrusaSlicer will automatically restart with the new version. Your configurations in `/configs/` are preserved.
 
@@ -158,15 +182,14 @@ Trigger a build manually via GitHub Actions:
 2. Click **Run workflow**
 3. Optionally specify a version tag (e.g., `version_2.9.4`)
 
-#### Using Your Own AppImages
+#### Using Custom AppImages
 
-Set the environment variable in docker-compose.yml:
+By default, the container uses AppImages from this repository (`riddix/prusaslicer-novnc-main`). To use a different source:
+
 ```yaml
 environment:
-  - PRUSASLICER_APPIMAGE_REPO=your-username/prusaslicer-novnc
+  - PRUSASLICER_APPIMAGE_REPO=your-username/your-repo
 ```
-
-The container will then download AppImages from your repo's releases instead of the community repo.
 
 ### Other Environment Variables
 
