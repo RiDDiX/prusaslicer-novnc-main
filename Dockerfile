@@ -46,7 +46,9 @@ WORKDIR /slic3r
 ADD get_latest_prusaslicer_release.sh /slic3r
 ADD update_prusaslicer.sh /slic3r
 ADD periodic_update_check.sh /slic3r
-RUN chmod +x /slic3r/get_latest_prusaslicer_release.sh \
+# Fix Windows line endings (CRLF -> LF) and make executable
+RUN sed -i 's/\r$//' /slic3r/*.sh \
+  && chmod +x /slic3r/get_latest_prusaslicer_release.sh \
   && chmod +x /slic3r/update_prusaslicer.sh \
   && chmod +x /slic3r/periodic_update_check.sh \
   && latestSlic3r=$(/slic3r/get_latest_prusaslicer_release.sh url) \
