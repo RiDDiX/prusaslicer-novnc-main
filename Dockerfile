@@ -49,10 +49,13 @@ COPY get_latest_prusaslicer_release.sh /slic3r/
 COPY update_prusaslicer.sh /slic3r/
 COPY periodic_update_check.sh /slic3r/
 
-# Fix line endings, set permissions, and download PrusaSlicer
+# Fix line endings, remove BOM, set permissions
 RUN sed -i 's/\r$//' /slic3r/get_latest_prusaslicer_release.sh \
   && sed -i 's/\r$//' /slic3r/update_prusaslicer.sh \
   && sed -i 's/\r$//' /slic3r/periodic_update_check.sh \
+  && sed -i '1s/^\xEF\xBB\xBF//' /slic3r/get_latest_prusaslicer_release.sh \
+  && sed -i '1s/^\xEF\xBB\xBF//' /slic3r/update_prusaslicer.sh \
+  && sed -i '1s/^\xEF\xBB\xBF//' /slic3r/periodic_update_check.sh \
   && chmod +x /slic3r/get_latest_prusaslicer_release.sh \
   && chmod +x /slic3r/update_prusaslicer.sh \
   && chmod +x /slic3r/periodic_update_check.sh
@@ -76,8 +79,8 @@ RUN groupadd slic3r \
   && mkdir -p /configs/.local \
   && mkdir -p /configs/.config/ \
   && mkdir -p /prints/ \
-  && mkdir -p /home/slic3r/.config/ \
-  && ln -s /configs/.config/ /home/slic3r/ \
+  && rm -rf /home/slic3r/.config \
+  && ln -s /configs/.config /home/slic3r/.config \
   && echo "XDG_DOWNLOAD_DIR=\"/prints/\"" >> /home/slic3r/.config/user-dirs.dirs \
   && echo "file:///prints prints" >> /home/slic3r/.gtk-bookmarks \
   && chown -R slic3r:slic3r /slic3r/ /home/slic3r/ /prints/ /configs/ \
