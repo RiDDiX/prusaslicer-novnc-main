@@ -18,8 +18,10 @@ fi
 export LOCALFBPORT=$((${VNC_PORT} + DISPLAY_NUMBER))
 if [ -n "$ENABLEHWGPU" ] && [ "$ENABLEHWGPU" = "true" ]; then
   export VGLRUN="/usr/bin/vglrun"
+  export LIBGL_ALWAYS_SOFTWARE=0
 else 
   export VGLRUN=
+  export LIBGL_ALWAYS_SOFTWARE=1
 fi
 
 export SUPD_LOGLEVEL="${SUPD_LOGLEVEL:-TRACE}"
