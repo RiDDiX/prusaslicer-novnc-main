@@ -19,6 +19,8 @@ services:
       - AUTO_UPDATE=true
       - ENABLE_PERIODIC_UPDATES=false
       - UPDATE_CHECK_INTERVAL=86400
+      # AppImage source (leave empty for community repo, or set to your-username/repo-name)
+      - PRUSASLICER_APPIMAGE_REPO=
     volumes:
       - ./prints:/prints/
       - ./data:/configs/

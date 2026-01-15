@@ -11,7 +11,8 @@ This enhanced fork adds the following improvements:
 - **🎮 Intel iGPU Support** - Added support for Intel integrated graphics (in addition to Nvidia)
 - **📦 GitHub Container Registry** - Images hosted on ghcr.io instead of Docker Hub
 - **🛠️ Improved CI/CD** - Automatic builds on push and scheduled weekly builds
-- **📥 Community AppImage** - Uses [probonopd/PrusaSlicer.AppImage](https://github.com/probonopd/PrusaSlicer.AppImage) since official PrusaSlicer stopped providing AppImages in v2.9.0+
+- **🏗️ Own AppImage Builds** - Includes GitHub Actions workflow to build your own up-to-date AppImages
+- **📥 Community Fallback** - Falls back to [probonopd/PrusaSlicer.AppImage](https://github.com/probonopd/PrusaSlicer.AppImage) if no own builds available
 - **⬆️ Updated Dependencies** - VirtualGL 3.1.4, TurboVNC 3.2.1 (latest stable versions)
 
 ## Overview
@@ -136,8 +137,36 @@ This container supports automatic updates of PrusaSlicer. By default, the contai
 - `AUTO_UPDATE=true`: Check for updates on container start (default: `true`)
 - `ENABLE_PERIODIC_UPDATES=false`: Enable background periodic update checks (default: `false`)
 - `UPDATE_CHECK_INTERVAL=86400`: Interval in seconds between periodic checks (default: 86400 = 24 hours)
+- `PRUSASLICER_APPIMAGE_REPO=`: Custom AppImage source repo (e.g., `your-username/prusaslicer-novnc`). Leave empty for community fallback.
 
 **Note**: After an update, PrusaSlicer will automatically restart with the new version. Your configurations in `/configs/` are preserved.
+
+### Building Your Own AppImages
+
+This fork includes a GitHub Actions workflow to build your own PrusaSlicer AppImages, ensuring you always have the latest version.
+
+#### How It Works
+
+1. **Daily Check**: The workflow runs daily at 6:00 UTC to check for new PrusaSlicer releases
+2. **Automatic Build**: If a new version is detected, it builds the AppImage from source
+3. **GitHub Release**: The AppImage is published as a GitHub Release in your repo
+
+#### Manual Build
+
+Trigger a build manually via GitHub Actions:
+1. Go to **Actions** → **Build PrusaSlicer AppImage**
+2. Click **Run workflow**
+3. Optionally specify a version tag (e.g., `version_2.9.4`)
+
+#### Using Your Own AppImages
+
+Set the environment variable in docker-compose.yml:
+```yaml
+environment:
+  - PRUSASLICER_APPIMAGE_REPO=your-username/prusaslicer-novnc
+```
+
+The container will then download AppImages from your repo's releases instead of the community repo.
 
 ### Other Environment Variables
 

@@ -1,10 +1,21 @@
 ﻿#!/bin/bash
 # PrusaSlicer Release Fetcher
-# Uses Community AppImage repo since official PrusaSlicer stopped providing AppImages in 2.9.0+
-# Source: https://github.com/probonopd/PrusaSlicer.AppImage
+# Uses our own AppImage builds, with fallback to Community repo
+# Primary: Own repo releases (built via GitHub Actions)
+# Fallback: https://github.com/probonopd/PrusaSlicer.AppImage
 
 TMPDIR="$(mktemp -d)"
-GITHUB_API="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
+
+# Try own repo first, fallback to community repo
+# Replace YOUR-USERNAME with your actual GitHub username after forking
+OWN_REPO="${PRUSASLICER_APPIMAGE_REPO:-}"
+COMMUNITY_REPO="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
+
+if [ -n "$OWN_REPO" ]; then
+    GITHUB_API="https://api.github.com/repos/${OWN_REPO}/releases/latest"
+else
+    GITHUB_API="$COMMUNITY_REPO"
+fi
 
 curl -SsL "$GITHUB_API" > "$TMPDIR/latest.json"
 

@@ -8,7 +8,14 @@ set -e
 SLIC3R_DIR="/slic3r"
 VERSION_FILE="/slic3r/.current_version"
 LOG_PREFIX="[PrusaSlicer-Update]"
-GITHUB_API="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
+
+# Use own repo if set, otherwise fallback to community
+OWN_REPO="${PRUSASLICER_APPIMAGE_REPO:-}"
+if [ -n "$OWN_REPO" ]; then
+    GITHUB_API="https://api.github.com/repos/${OWN_REPO}/releases/latest"
+else
+    GITHUB_API="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
+fi
 
 log() {
     echo "$LOG_PREFIX $1"
