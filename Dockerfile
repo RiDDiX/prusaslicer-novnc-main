@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget xorg xauth gosu supervisor x11-xserver-utils libegl1-mesa libgl1-mesa-glx \
     locales-all libpam0g libxt6 libxext6 dbus-x11 x11-xkb-utils xkb-data python3 xterm novnc \
     lxde gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf arc-theme \
-    freeglut3 libgtk2.0-dev libwxgtk3.2-dev libwx-perl libxmu-dev libgl1-mesa-dri \
+    freeglut3 libgtk2.0-dev libwxgtk3.0-gtk3-dev libwx-perl libxmu-dev libgl1-mesa-dri \
     xdg-utils locales pcmanfm jq curl git bzip2 gpg-agent software-properties-common \
     libwebkit2gtk-4.1-dev libfuse2 \
     mesa-utils libegl-mesa0 libgbm1 \
