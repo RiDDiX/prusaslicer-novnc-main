@@ -1,13 +1,20 @@
 ﻿#!/bin/bash
+# PrusaSlicer Release Fetcher
+# Uses Community AppImage repo since official PrusaSlicer stopped providing AppImages in 2.9.0+
+# Source: https://github.com/probonopd/PrusaSlicer.AppImage
 
 TMPDIR="$(mktemp -d)"
+GITHUB_API="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
 
-curl -SsL https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest > $TMPDIR/latest.json
+curl -SsL "$GITHUB_API" > "$TMPDIR/latest.json"
 
-# Grabs the first item of the latest result of the AppImage.
-url=$(jq -r '.assets[] | select(.browser_download_url|test("linux-x64-older-distros-GTK3.*AppImage$"))|.browser_download_url' $TMPDIR/latest.json)
-name=$(jq -r '.assets[] | select(.browser_download_url|test("linux-x64-older-distros-GTK3.*AppImage$"))|.name' $TMPDIR/latest.json)
-version=$(jq -r .tag_name $TMPDIR/latest.json)
+# Get the x86_64 AppImage (not the .zsync file)
+url=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .browser_download_url' "$TMPDIR/latest.json")
+name=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .name' "$TMPDIR/latest.json")
+version=$(jq -r '.tag_name' "$TMPDIR/latest.json")
+
+# Cleanup temp directory
+rm -rf "$TMPDIR"
 
 if [ $# -ne 1 ]; then
   echo "Wrong number of params"
@@ -17,21 +24,18 @@ else
 fi
 
 case $request in
-
   url)
-    echo $url
+    echo "$url"
     ;;
-
   name)
-    echo $name
+    echo "$name"
     ;;
-
   version)
-    echo $version
+    echo "$version"
     ;;
-
   *)
     echo "Unknown request"
+    exit 1
     ;;
 esac
 

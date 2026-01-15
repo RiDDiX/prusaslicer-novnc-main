@@ -8,8 +8,8 @@ LABEL authors="vajonam, Michael Helfrich - helfrichmichael"
 LABEL maintainer="Fork maintainer"
 LABEL description="PrusaSlicer with noVNC, auto-updates, Nvidia & Intel GPU support"
 
-ARG VIRTUALGL_VERSION=3.1.1-20240228
-ARG TURBOVNC_VERSION=3.1.1-20240127
+ARG VIRTUALGL_VERSION=3.1.4
+ARG TURBOVNC_VERSION=3.2.1
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install some basic dependencies
@@ -34,9 +34,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Install VirtualGL and TurboVNC
-RUN wget -qO /tmp/virtualgl_${VIRTUALGL_VERSION}_amd64.deb https://packagecloud.io/dcommander/virtualgl/packages/any/any/virtualgl_${VIRTUALGL_VERSION}_amd64.deb/download.deb?distro_version_id=35\
-    && wget -qO /tmp/turbovnc_${TURBOVNC_VERSION}_amd64.deb https://packagecloud.io/dcommander/turbovnc/packages/any/any/turbovnc_${TURBOVNC_VERSION}_amd64.deb/download.deb?distro_version_id=35 \
+# Install VirtualGL and TurboVNC from GitHub Releases
+RUN wget -qO /tmp/virtualgl_${VIRTUALGL_VERSION}_amd64.deb https://github.com/VirtualGL/virtualgl/releases/download/${VIRTUALGL_VERSION}/virtualgl_${VIRTUALGL_VERSION}_amd64.deb \
+    && wget -qO /tmp/turbovnc_${TURBOVNC_VERSION}_amd64.deb https://github.com/TurboVNC/turbovnc/releases/download/${TURBOVNC_VERSION}/turbovnc_${TURBOVNC_VERSION}_amd64.deb \
     && dpkg -i /tmp/virtualgl_${VIRTUALGL_VERSION}_amd64.deb \
     && dpkg -i /tmp/turbovnc_${TURBOVNC_VERSION}_amd64.deb \
     && rm -rf /tmp/*.deb
@@ -55,24 +55,17 @@ RUN sed -i 's/\r$//' /slic3r/get_latest_prusaslicer_release.sh \
   && chmod +x /slic3r/update_prusaslicer.sh \
   && chmod +x /slic3r/periodic_update_check.sh
 
-# Download and extract PrusaSlicer
-RUN set -ex \
-  && echo "=== Testing GitHub API ===" \
-  && curl -SsL https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest | head -50 \
-  && echo "=== Getting release info ===" \
+# Download and extract PrusaSlicer from Community AppImage repo
+# (Official PrusaSlicer stopped providing AppImages since 2.9.0)
+RUN set -e \
   && latestSlic3r=$(/slic3r/get_latest_prusaslicer_release.sh url) \
   && slic3rReleaseName=$(/slic3r/get_latest_prusaslicer_release.sh name) \
   && slic3rVersion=$(/slic3r/get_latest_prusaslicer_release.sh version) \
-  && echo "URL: ${latestSlic3r}" \
-  && echo "Name: ${slic3rReleaseName}" \
-  && echo "Version: ${slic3rVersion}" \
-  && if [ -z "$latestSlic3r" ] || [ "$latestSlic3r" = "null" ]; then echo "ERROR: Could not get download URL"; exit 1; fi \
   && echo "Downloading PrusaSlicer ${slic3rVersion} from ${latestSlic3r}" \
-  && curl -sSL ${latestSlic3r} > ${slic3rReleaseName} \
-  && rm -f /slic3r/releaseInfo.json \
-  && chmod +x /slic3r/${slic3rReleaseName} \
-  && /slic3r/${slic3rReleaseName} --appimage-extract \
-  && rm -f /slic3r/${slic3rReleaseName} \
+  && curl -sSL -o "${slic3rReleaseName}" "${latestSlic3r}" \
+  && chmod +x "/slic3r/${slic3rReleaseName}" \
+  && "/slic3r/${slic3rReleaseName}" --appimage-extract \
+  && rm -f "/slic3r/${slic3rReleaseName}" \
   && echo "${slic3rVersion}" > /slic3r/.current_version
 
 # Create user and directories

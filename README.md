@@ -11,6 +11,8 @@ This enhanced fork adds the following improvements:
 - **🎮 Intel iGPU Support** - Added support for Intel integrated graphics (in addition to Nvidia)
 - **📦 GitHub Container Registry** - Images hosted on ghcr.io instead of Docker Hub
 - **🛠️ Improved CI/CD** - Automatic builds on push and scheduled weekly builds
+- **📥 Community AppImage** - Uses [probonopd/PrusaSlicer.AppImage](https://github.com/probonopd/PrusaSlicer.AppImage) since official PrusaSlicer stopped providing AppImages in v2.9.0+
+- **⬆️ Updated Dependencies** - VirtualGL 3.1.4, TurboVNC 3.2.1 (latest stable versions)
 
 ## Overview
 

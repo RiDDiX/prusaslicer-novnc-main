@@ -1,12 +1,14 @@
 ﻿#!/bin/bash
 # PrusaSlicer Auto-Update Script
 # Checks for new versions and updates if available
+# Uses Community AppImage repo: https://github.com/probonopd/PrusaSlicer.AppImage
 
 set -e
 
 SLIC3R_DIR="/slic3r"
 VERSION_FILE="/slic3r/.current_version"
 LOG_PREFIX="[PrusaSlicer-Update]"
+GITHUB_API="https://api.github.com/repos/probonopd/PrusaSlicer.AppImage/releases/latest"
 
 log() {
     echo "$LOG_PREFIX $1"
@@ -22,11 +24,11 @@ get_installed_version() {
 
 get_latest_release_info() {
     TMPDIR="$(mktemp -d)"
-    curl -SsL https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest > "$TMPDIR/latest.json"
+    curl -SsL "$GITHUB_API" > "$TMPDIR/latest.json"
     
-    LATEST_URL=$(jq -r '.assets[] | select(.browser_download_url|test("linux-x64-older-distros-GTK3.*AppImage$"))|.browser_download_url' "$TMPDIR/latest.json")
-    LATEST_NAME=$(jq -r '.assets[] | select(.browser_download_url|test("linux-x64-older-distros-GTK3.*AppImage$"))|.name' "$TMPDIR/latest.json")
-    LATEST_VERSION=$(jq -r .tag_name "$TMPDIR/latest.json")
+    LATEST_URL=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .browser_download_url' "$TMPDIR/latest.json")
+    LATEST_NAME=$(jq -r '.assets[] | select(.name | test("x86_64.AppImage$")) | .name' "$TMPDIR/latest.json")
+    LATEST_VERSION=$(jq -r '.tag_name' "$TMPDIR/latest.json")
     
     rm -rf "$TMPDIR"
 }
