@@ -1,0 +1,28 @@
+---
+# Docker Compose for Intel iGPU (integrated graphics)
+# Use with: docker compose -f docker-compose.intel.yml up -d
+version: "2.1"
+services:
+  prusaslicer-novnc:
+    image: ghcr.io/${GITHUB_USER:-your-username}/prusaslicer-novnc:latest
+    container_name: prusaslicer-novnc
+    devices:
+      - /dev/dri:/dev/dri
+    environment:
+      - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+      - DISPLAY=:0
+      - VGL_DISPLAY=egl
+      - SUPD_LOGLEVEL=INFO
+      - ENABLEHWGPU=true
+      - VNC_RESOLUTION=1920x1080
+      # Auto-update settings
+      - AUTO_UPDATE=true
+      - ENABLE_PERIODIC_UPDATES=false
+      - UPDATE_CHECK_INTERVAL=86400
+    volumes:
+      - ./prints:/prints/
+      - ./data:/configs/
+    ports:
+      - "8080:8080"
+      - "5900:5900"
+    restart: unless-stopped
