@@ -73,11 +73,11 @@ download_and_install() {
     
     # Remove AppImage EGL/GL libs to use system libs (prevents EGL crashes)
     log "Removing AppImage EGL/DRI libs..."
-    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/libEGL"* 2>/dev/null || true
-    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/libGL"* 2>/dev/null || true
-    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/libdrm"* 2>/dev/null || true
-    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/dri" 2>/dev/null || true
-    rm -rf "$SLIC3R_DIR/squashfs-root/usr/lib/libgbm"* 2>/dev/null || true
+    find "$SLIC3R_DIR/squashfs-root" -name "libEGL*" -delete 2>/dev/null || true
+    find "$SLIC3R_DIR/squashfs-root" -name "libGL*" -delete 2>/dev/null || true
+    find "$SLIC3R_DIR/squashfs-root" -name "libdrm*" -delete 2>/dev/null || true
+    find "$SLIC3R_DIR/squashfs-root" -name "libgbm*" -delete 2>/dev/null || true
+    find "$SLIC3R_DIR/squashfs-root" -type d -name "dri" -exec rm -rf {} + 2>/dev/null || true
     
     # Update version file
     echo "$LATEST_VERSION" > "$VERSION_FILE"

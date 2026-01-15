@@ -73,11 +73,11 @@ RUN set -e \
   && rm -f "/slic3r/${slic3rReleaseName}" \
   && echo "${slic3rVersion}" > /slic3r/.current_version \
   && echo "Removing AppImage EGL/DRI libs to use system libs..." \
-  && rm -rf /slic3r/squashfs-root/usr/lib/libEGL* \
-  && rm -rf /slic3r/squashfs-root/usr/lib/libGL* \
-  && rm -rf /slic3r/squashfs-root/usr/lib/libdrm* \
-  && rm -rf /slic3r/squashfs-root/usr/lib/dri \
-  && rm -rf /slic3r/squashfs-root/usr/lib/libgbm*
+  && find /slic3r/squashfs-root -name "libEGL*" -delete \
+  && find /slic3r/squashfs-root -name "libGL*" -delete \
+  && find /slic3r/squashfs-root -name "libdrm*" -delete \
+  && find /slic3r/squashfs-root -name "libgbm*" -delete \
+  && find /slic3r/squashfs-root -type d -name "dri" -exec rm -rf {} + 2>/dev/null || true
 
 # Create user and directories
 RUN groupadd slic3r \
