@@ -95,8 +95,11 @@ ENV PATH="${PATH}:/opt/VirtualGL/bin:/opt/TurboVNC/bin"
 
 COPY entrypoint.sh /entrypoint.sh
 COPY supervisord.conf /etc/
-RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh \
-  && sed -i 's/\r$//' /etc/supervisord.conf
+RUN sed -i 's/\r$//' /entrypoint.sh \
+  && sed -i '1s/^\xEF\xBB\xBF//' /entrypoint.sh \
+  && chmod +x /entrypoint.sh \
+  && sed -i 's/\r$//' /etc/supervisord.conf \
+  && sed -i '1s/^\xEF\xBB\xBF//' /etc/supervisord.conf
 
 # Add a default file to resize and redirect, and adjust icons for noVNC.
 ADD vncresize.html /usr/share/novnc/index.html
