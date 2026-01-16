@@ -217,5 +217,3 @@ This project is a fork with enhancements. Please support the original authors:
 
 - **Original Repository**: [helfrichmichael/prusaslicer-novnc](https://github.com/helfrichmichael/prusaslicer-novnc)
 - **Original Docker Hub**: [mikeah/prusaslicer-novnc](https://hub.docker.com/r/mikeah/prusaslicer-novnc)
-
-<a href="https://www.buymeacoffee.com/helfrichmichael" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee (Original Author)" height="41" width="174"></a>
