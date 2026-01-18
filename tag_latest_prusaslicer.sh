@@ -37,13 +37,17 @@ LATEST_GIT_TAG=$(git for-each-ref refs/tags --sort=-creatordate --format='%(refn
 if [[ "${LATEST_GIT_TAG}" != "${LATEST_VERSION}" ]]; then
 
   echo "Update needed. Latest tag ver: ${LATEST_GIT_TAG} != upstream ver: ${LATEST_VERSION} .."
-  git tag "${LATEST_VERSION}"
-
+  
   if [[ "$GH_ACTION" != "" ]]; then
     echo "${LATEST_VERSION}" > ${GITHUB_WORKSPACE}/VERSION
-    git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY --tags
+    # Configure git for GitHub Actions
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git tag "${LATEST_VERSION}"
+    git push origin "${LATEST_VERSION}"
     exit 0
   else
+    git tag "${LATEST_VERSION}"
     git push --tags
   fi    
 
