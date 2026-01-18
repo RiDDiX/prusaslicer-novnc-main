@@ -142,7 +142,7 @@ docker exec prusaslicer-novnc ls -la /dev/dri
 
 The `GL Version` on the System Information screen inside PrusaSlicer should show your GPU model and driver version:
 
-<img src="https://github.com/vajonam/prusaslicer-novnc/assets/152501/250c93f5-e550-42f9-8cce-b942c93ef61e" width="300" />
+<img src="PrusaSlicerRiDDiX2.9.4.png" width="500" />
 
 
 
